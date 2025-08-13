@@ -1,0 +1,26 @@
+{
+    "name": "fred/game-api",
+    "description": "API de listagem de jogos",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Fred\\GameApi\\": "src/",
+            "Model\\": "Model/",
+            "Controller\\": "Controller/"
+        },
+        "files": [
+            "Config/configuration.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "JanisaroBRR",
+            "email": "fredalefsr@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=8.0",
+        "ext-mbstring": "*"
+    }
+}
