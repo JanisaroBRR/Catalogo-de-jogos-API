@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteBase /game_api/
+
+# Permite os métodos RESTful
+<Limit GET POST PUT DELETE OPTIONS>
+    Require all granted
+</Limit>
+
+# Regra de Roteamento Simplificada
+# Pega qualquer coisa depois da barra e passa para o index.php como 'path'
+RewriteRule ^(.*)$ index.php?path=$1 [QSA,L]

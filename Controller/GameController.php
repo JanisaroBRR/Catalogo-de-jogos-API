@@ -1,26 +1,21 @@
 <?php
 namespace Controller;
 
-// CORREÇÃO 1: Precisamos importar a classe 'Game', não 'User'.
 use Model\Game;
 
-// O configuration.php não é estritamente necessário aqui, mas podemos manter por padrão.
 require_once __DIR__ . '/../Config/configuration.php';
 
 class GameController
 {
+    
     // Função para pegar todos os JOGOS
-    // No seu GameController.php
     public function getGames()
     {
-        // 1. Crie uma instância do MODELO (o especialista em dados)
-        //    Note o '\Model\Game' - isso garante que estamos pegando a classe do namespace correto.
         $gameModel = new Game();
 
-        // 2. Peça ao MODELO para buscar os dados do banco.
         $games = $gameModel->getGames();
 
-        // 3. O resto do código (o if/else) continua o mesmo.
+
         if ($games) {
             header('Content-Type: application/json', true, 200);
             echo json_encode($games);
@@ -36,7 +31,7 @@ class GameController
     {
         $data = json_decode(file_get_contents("php://input"));
 
-        // CORREÇÃO 5: Validar os campos do nosso jogo (title, genero, etc.)
+        // CORREÇÃO 5: Validar os campos do jogo (title, genero, etc.)
         if (isset($data->title) && isset($data->genero) && isset($data->plataforma) && isset($data->ano_lancamento)) {
             $game = new Game();
             // CORREÇÃO 6: Atribuir os dados do JSON para as propriedades do objeto Game.
@@ -57,22 +52,20 @@ class GameController
             echo json_encode(["message" => "Dados incompletos. É necessário enviar title, genero, plataforma e ano_lancamento."]);
         }
     }
-
     // Função para editar um JOGO
-    public function updateGame()
+    public function updateGame() // O ID vem do corpo do JSON, então não precisa de parâmetro aqui
     {
         $data = json_decode(file_get_contents("php://input"));
 
-        // A validação para o update precisa também do ID.
-        if (isset($data->id) && isset($data->title) && isset($data->genero) && isset($data->plataforma) && isset($data->ano_lancamento)) {
-            $game = new Game();
-            $game->id = $data->id;
-            $game->title = $data->title;
-            $game->genero = $data->genero;
-            $game->plataforma = $data->plataforma;
-            $game->ano_lancamento = $data->ano_lancamento;
+        if (isset($data->id) && isset($data->title)) { // Validação mínima
+            $gameModel = new Game();
+            $gameModel->id = $data->id;
+            $gameModel->title = $data->title;
+            $gameModel->genero = $data->genero;
+            $gameModel->plataforma = $data->plataforma;
+            $gameModel->ano_lancamento = $data->ano_lancamento;
 
-            if ($game->updateGame()) { // Chamar o método updateGame()
+            if ($gameModel->updateGame()) {
                 header('Content-Type: application/json', true, 200);
                 echo json_encode(["message" => "Jogo atualizado com sucesso"]);
             } else {
@@ -81,30 +74,47 @@ class GameController
             }
         } else {
             header('Content-Type: application/json', true, 400);
-            echo json_encode(["message" => "Dados incompletos para atualização."]);
+            echo json_encode(["message" => "Dados inválidos para atualização. 'id' e 'title' são obrigatórios."]);
         }
     }
 
     // Função para excluir um JOGO
-    public function deleteGame()
+    public function deleteGame($id) 
     {
-        $id = $_GET['id'] ?? null;
-
         if ($id) {
-            $game = new Game();
-            $game->id = $id;
+            $gameModel = new Game();
+            $gameModel->id = $id;
 
-            if ($game->deleteGame()) { // Chamar o método deleteGame()
+            if ($gameModel->deleteGame()) {
                 header('Content-Type: application/json', true, 200);
                 echo json_encode(["message" => "Jogo excluído com sucesso"]);
             } else {
                 header('Content-Type: application/json', true, 500);
                 echo json_encode(["message" => "Falha ao excluir jogo"]);
             }
-        } else {
-            header('Content-Type: application/json', true, 400);
-            echo json_encode(["message" => "ID do jogo não fornecido na URL."]);
         }
+        
+    }
+
+// Função para pegar um jogo específico pelo ID
+public function getGameById($id)
+{
+    $gameModel = new \Model\Game();
+    $game = $gameModel->getGameById($id);
+
+    if ($game) {
+        // Sucesso: Jogo encontrado.
+        header('Content-Type: application/json', true, 200);
+        echo json_encode($game);
+    } else {
+        // Falha: Nenhum jogo com esse ID foi encontrado.
+        header('Content-Type: application/json', true, 404);
+        echo json_encode(["message" => "Jogo não encontrado"]);
     }
 }
+
+    
+}
+
+
 ?>

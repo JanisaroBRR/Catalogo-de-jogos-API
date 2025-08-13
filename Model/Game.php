@@ -48,41 +48,64 @@ class Game
         return false;
     }
 
-    // Método para editar um JOGO (Renomeado de updateUser para updateGame)
-    public function updateGame() // CORREÇÃO 2: O nome do método foi atualizado para refletir a entidade "Game".
-    {
-        $sql = "UPDATE jogos SET title = :title, genero = :genero, plataforma = :plataforma, ano_lancamento = :ano_lancamento WHERE id = :id";
-        $stmt = $this->conn->prepare($sql);
+public function updateGame()
+{
+    $sql = "UPDATE jogos SET title = :title, genero = :genero, plataforma = :plataforma, ano_lancamento = :ano_lancamento WHERE id = :id";
+    $stmt = $this->conn->prepare($sql);
 
-        // CORREÇÃO 3: Faltavam os bindParam para plataforma e ano_lancamento na atualização.
-        // A lógica é a mesma da criação: todos os placeholders (os :campos) na query SQL precisam de um valor correspondente.
-        $stmt->bindParam(":id", $this->id, PDO::PARAM_INT);
-        $stmt->bindParam(":title", $this->title, PDO::PARAM_STR);
-        $stmt->bindParam(":genero", $this->genero, PDO::PARAM_STR);
-        $stmt->bindParam(":plataforma", $this->plataforma, PDO::PARAM_STR);
-        $stmt->bindParam(":ano_lancamento", $this->ano_lancamento, PDO::PARAM_INT);
+    $stmt->bindParam(":id", $this->id, PDO::PARAM_INT);
+    $stmt->bindParam(":title", $this->title, PDO::PARAM_STR);
+    $stmt->bindParam(":genero", $this->genero, PDO::PARAM_STR);
+    $stmt->bindParam(":plataforma", $this->plataforma, PDO::PARAM_STR);
+    $stmt->bindParam(":ano_lancamento", $this->ano_lancamento, PDO::PARAM_INT);
 
-        if ($stmt->execute()) {
-            return true;
-        }
+    $stmt->execute(); // Executa a query
 
-        return false;
+
+    if ($stmt->rowCount() > 0) {
+        return true; // Sucesso, uma ou mais linhas foram atualizadas.
     }
 
-    // Método para excluir um JOGO (Renomeado de deleteUser para deleteGame)
-    public function deleteGame() // CORREÇÃO 4: Nome do método atualizado para consistência.
-    {
-        $sql = "DELETE FROM jogos WHERE id = :id";
-        $stmt = $this->conn->prepare($sql);
+    return false; // Falha, nenhuma linha com esse ID foi encontrada ou os dados eram os mesmos.
+}
 
-        $stmt->bindParam(":id", $this->id, PDO::PARAM_INT);
 
-        if ($stmt->execute()) {
-            return true;
-        }
 
-        return false;
+public function deleteGame()
+{
+    $sql = "DELETE FROM jogos WHERE id = :id";
+    $stmt = $this->conn->prepare($sql);
+
+    $stmt->bindParam(":id", $this->id, PDO::PARAM_INT);
+
+    $stmt->execute(); // Executa a query
+
+    // AQUI ESTÁ A MÁGICA: Verificamos se alguma linha foi realmente deletada.
+    if ($stmt->rowCount() > 0) {
+        return true; // Sucesso, a linha foi encontrada e deletada.
     }
+
+    return false; // Falha, nenhuma linha com esse ID foi encontrada.
+}
+// No arquivo Model/Game.php, dentro da classe Game
+
+// Método para obter um único jogo pelo seu ID
+public function getGameById($id)
+{
+    // A query SQL agora tem uma cláusula WHERE para filtrar pelo ID
+    $sql = "SELECT * FROM jogos WHERE id = :id";
+    $stmt = $this->conn->prepare($sql);
+
+    // Vinculamos o parâmetro :id ao valor do $id que recebemos
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    // Usamos fetch() em vez de fetchAll(), pois esperamos apenas um resultado
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+
 }
 
 ?>
